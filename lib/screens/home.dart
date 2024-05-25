@@ -8,7 +8,7 @@ import 'package:projeto_apis_flutter/model/news_response.dart';
 import 'package:projeto_apis_flutter/screens/article_detail.dart';
 
 class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+  const Home({super.key});
 
   @override
   State<Home> createState() => _HomeState();
@@ -19,10 +19,10 @@ class _HomeState extends State<Home> {
   int defaultPageSize = 50;
 
   Future<List<Article>> buscar(String busca) {
-    var buscaParseada = busca.isNotEmpty ? busca : "a";
+    var buscaParseada = busca.isNotEmpty ? busca : "technology";
     var url = Uri.https('newsapi.org', '/v2/everything', {
       'q': buscaParseada,
-      'from': "2024-04-22",
+      'from': "2024-05-22",
       "pageSize": defaultPageSize.toString(),
       'sortBy': 'popularity',
       'apiKey': Config.apiKey
@@ -47,29 +47,60 @@ class _HomeState extends State<Home> {
     futureArticles = buscar("");
   }
 
+  //Validar se a URL é valida, pois existem diversos links com tipos de imagens
+  bool isValidImageUrl(String? url) {
+    if (url == null || url.isEmpty) {
+      return false;
+    }
+    final uri = Uri.tryParse(url);
+    return uri != null &&
+        (uri.isScheme('http') || uri.isScheme('https')) &&
+        (url.endsWith('.png') ||
+            url.endsWith('.jpg') ||
+            url.endsWith('.jpeg') ||
+            url.endsWith('.webp'));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Articles'),
+        title: const Text(
+          'Notícias',
+          style: TextStyle(
+            color: Colors.white, // Define a cor do texto
+            fontSize: 20, // Tamanho da fonte
+            fontWeight: FontWeight.bold, // Peso da fonte
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: const Color.fromRGBO(0, 108, 255, 1.0),
       ),
       body: SafeArea(
         child: Column(
           children: [
-            TextField(
-              decoration: const InputDecoration(
-                hintText: 'Pesquisar artigo...',
-                prefixIcon: Icon(Icons.search),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: 'Pesquisar artigo...',
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                onSubmitted: (value) {
+                  setState(() {
+                    futureArticles = buscar(value);
+                  });
+                },
               ),
-              onSubmitted: (value) {
-                setState(() {
-                  futureArticles = buscar(value);
-                });
-              },
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: FutureBuilder<List<Article>>(
                   future: futureArticles,
                   builder: (context, snapshot) {
@@ -89,18 +120,29 @@ class _HomeState extends State<Home> {
                         itemBuilder: (context, index) {
                           final article = listaArticles?[index];
 
-                          return ListTile(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      ArticleDetail(article: article),
-                                ),
-                              );
-                            },
-                            title: Text(article!.title),
-                            subtitle: Text(article.description),
+                          return Card(
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            child: ListTile(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ArticleDetail(article: article),
+                                  ),
+                                );
+                              },
+                              leading: isValidImageUrl(article?.urlToImage)
+                                  ? Image.network(article!.urlToImage!,
+                                      width: 50, fit: BoxFit.cover)
+                                  : const Icon(Icons.image, size: 50),
+                              title: Text(article!.title ?? ''),
+                              subtitle: Text(
+                                article.description ?? '',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                           );
                         },
                       );

@@ -1,16 +1,16 @@
 class Article {
   Article(
       {this.author,
-      required this.title,
-      required this.description,
+      this.title,
+      this.description,
       this.url,
       this.urlToImage,
       this.publishedAt,
       this.content});
 
   String? author;
-  String title;
-  String description;
+  String? title;
+  String? description;
   String? url;
   String? urlToImage;
   String? publishedAt;

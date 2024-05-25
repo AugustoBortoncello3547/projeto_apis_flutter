@@ -40,16 +40,15 @@ class _AuthState extends State<Auth> {
         _authorized = 'Autenticando';
       });
       authenticated = await auth.authenticate(
-        localizedReason: 'Olá, por favor autentique',
+        localizedReason: 'Posicione o dedo no leitor biométrico do seu celular',
         options: const AuthenticationOptions(
-          stickyAuth:
-              true, //Cenário que solicitou a autenticacao, app saiu de cena e voltou depois: Se true = continua pedindo a autenticação.
-          biometricOnly: true, //Remove a opção de usar o PIN
+          stickyAuth: true,
+          biometricOnly: true,
         ),
       );
       setState(() {
         _isAuthenticating = false;
-        _authorized = 'Autenticando';
+        _authorized = 'Autenticar';
       });
     } on PlatformException catch (e) {
       print(e);
@@ -82,44 +81,69 @@ class _AuthState extends State<Auth> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
+        backgroundColor: Colors.white,
         appBar: AppBar(
-          title: const Text('Auth'),
+          title: const Text(
+            'Autenticação Biométrica',
+            style: TextStyle(
+              color: Colors.white, // Define a cor do texto
+              fontSize: 20, // Tamanho da fonte
+              fontWeight: FontWeight.bold, // Peso da fonte
+            ),
+          ),
+          backgroundColor: const Color.fromRGBO(0, 108, 255, 1.0),
+          centerTitle: true, // Alinha o título no centro
         ),
-        body: ListView(
-          padding: const EdgeInsets.only(top: 30),
-          children: <Widget>[
-            Column(
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Center(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
+                const Icon(
+                  Icons.fingerprint,
+                  size: 100,
+                  color: Color.fromRGBO(144, 148, 151, 10),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  _authorized,
+                  style: const TextStyle(
+                      color: Color.fromRGBO(144, 148, 151, 10),
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 20),
                 if (_isAuthenticating)
-                  ElevatedButton(
+                  ElevatedButton.icon(
                     onPressed: _cancelAuthentication,
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Text('Cancelar'),
-                        Icon(Icons.cancel),
-                      ],
+                    icon: const Icon(Icons.cancel),
+                    label: const Text('Cancelar'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                     ),
                   )
                 else
-                  Column(
-                    children: <Widget>[
-                      ElevatedButton(
-                        onPressed: _authenticateWithBiometrics,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Text(_isAuthenticating ? 'Cancela' : 'Entrar'),
-                            const Icon(Icons.fingerprint),
-                          ],
-                        ),
+                  ElevatedButton.icon(
+                    onPressed: _authenticateWithBiometrics,
+                    icon: const Icon(Icons.fingerprint),
+                    label: const Text('Entrar'),
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: const Color.fromRGBO(255, 255, 255, 1.0),
+                      backgroundColor: const Color.fromRGBO(0, 108, 255, 1.0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
                       ),
-                    ],
+                    ),
                   ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
